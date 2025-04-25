@@ -2,6 +2,12 @@ import java.util.*;
 
 public class BoardGeneration {
 
+    private static String[][] lastGeneratedBoard;
+
+    public static String[][] getLastGeneratedBoard() {
+        return lastGeneratedBoard;
+    }
+
     public static void initiateStandardChess() {
         long WP = 0L, WN = 0L, WB = 0L, WR = 0L, WQ = 0L, WK = 0L;
         long BP = 0L, BN = 0L, BB = 0L, BR = 0L, BQ = 0L, BK = 0L;
@@ -35,7 +41,6 @@ public class BoardGeneration {
                 {" ", " ", " ", " ", " ", " ", " ", " "}
         };
 
-        // Place bishops on opposite colors
         int random1 = (int)(Math.random() * 8);
         while (random1 % 2 != 0) {
             random1 = (int)(Math.random() * 8);
@@ -50,7 +55,6 @@ public class BoardGeneration {
         chessBoard[0][random2] = "b";
         chessBoard[7][random2] = "B";
 
-        // Place queen
         int random3 = (int)(Math.random() * 8);
         while (random3 == random1 || random3 == random2) {
             random3 = (int)(Math.random() * 8);
@@ -58,7 +62,6 @@ public class BoardGeneration {
         chessBoard[0][random3] = "q";
         chessBoard[7][random3] = "Q";
 
-        // Place two knights
         int random4 = (int)(Math.random() * 8);
         while (random4 == random1 || random4 == random2 || random4 == random3) {
             random4 = (int)(Math.random() * 8);
@@ -73,7 +76,6 @@ public class BoardGeneration {
         chessBoard[0][random5] = "n";
         chessBoard[7][random5] = "N";
 
-        // Place rook, king, rook using counter-style
         int counter = 0;
         while (!" ".equals(chessBoard[0][counter])) {
             counter++;
@@ -137,19 +139,21 @@ public class BoardGeneration {
         }
 
         for (int i = 0; i < 64; i++) {
-            if (((WP >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "P";
-            if (((WN >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "N";
-            if (((WB >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "B";
-            if (((WR >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "R";
-            if (((WQ >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "Q";
-            if (((WK >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "K";
-            if (((BP >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "p";
-            if (((BN >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "n";
-            if (((BB >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "b";
-            if (((BR >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "r";
-            if (((BQ >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "q";
-            if (((BK >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "k";
+            if (((WP >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u2659"; // ♙
+            if (((WN >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u2658"; // ♘
+            if (((WB >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u2657"; // ♗
+            if (((WR >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u2656"; // ♖
+            if (((WQ >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u2655"; // ♕
+            if (((WK >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u2654"; // ♔
+            if (((BP >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u265F"; // ♟
+            if (((BN >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u265E"; // ♞
+            if (((BB >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u265D"; // ♝
+            if (((BR >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u265C"; // ♜
+            if (((BQ >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u265B"; // ♛
+            if (((BK >>> i) & 1) == 1) chessBoard[i / 8][i % 8] = "\u265A"; // ♚
         }
+
+        lastGeneratedBoard = chessBoard;
 
         for (int i = 0; i < 8; i++) {
             System.out.println(Arrays.toString(chessBoard[i]));
