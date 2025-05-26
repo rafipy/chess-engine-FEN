@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 public class ChessApplication extends JFrame {
     private JPanel chessBoard;
     private JTextField fenTextField;
-    private JButton importButton, exportButton, prevButton, nextButton;
+    private JButton prevButton, nextButton;
     private JLabel turnLabel;
     private List<List<ChessSquare>> squares = new ArrayList<>();
     private Piece selectedPiece = null;
@@ -95,23 +95,20 @@ public class ChessApplication extends JFrame {
         }
 
         // Initialize rook moved status
-        whiteRooksMoved.add(false); // queenside
-        whiteRooksMoved.add(false); // kingside
-        blackRooksMoved.add(false); // queenside
-        blackRooksMoved.add(false); // kingside
+        whiteRooksMoved.add(false);
+        whiteRooksMoved.add(false);
+        blackRooksMoved.add(false);
+        blackRooksMoved.add(false);
 
         // Create control panel
         JPanel controlPanel = new JPanel(new BorderLayout());
 
-        // FEN controls
+        // FEN text field
         fenTextField = new JTextField("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-        importButton = new JButton("Import FEN");
-        exportButton = new JButton("Export FEN");
+
+        // Navigation buttons
         prevButton = new JButton("← Previous");
         nextButton = new JButton("Next →");
-
-        importButton.addActionListener(e -> importFEN());
-        exportButton.addActionListener(e -> exportFEN());
         prevButton.addActionListener(e -> navigateMoveHistory(-1));
         nextButton.addActionListener(e -> navigateMoveHistory(1));
 
@@ -125,37 +122,33 @@ public class ChessApplication extends JFrame {
         // History navigation controls
         historySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 0, 1));
         jumpButton = new JButton("Jump to Move");
+        jumpButton.addActionListener(e -> jumpToMove());
+
+        // History buttons panel
+        JPanel historyButtonPanel = new JPanel();
         exportHistoryButton = new JButton("Export History");
         importHistoryButton = new JButton("Import History");
-
-        jumpButton.addActionListener(e -> jumpToMove());
         exportHistoryButton.addActionListener(e -> exportHistoryToFile());
         importHistoryButton.addActionListener(e -> importHistoryFromFile());
+        historyButtonPanel.add(exportHistoryButton);
+        historyButtonPanel.add(importHistoryButton);
 
-        JPanel historyControlPanel = new JPanel();
-        historyControlPanel.add(new JLabel("Move:"));
-        historyControlPanel.add(historySpinner);
-        historyControlPanel.add(jumpButton);
-        historyControlPanel.add(exportHistoryButton);
-        historyControlPanel.add(importHistoryButton);
+        // Navigation panel
+        JPanel navigationPanel = new JPanel();
+        navigationPanel.add(prevButton);
+        navigationPanel.add(nextButton);
+        navigationPanel.add(new JLabel("Move:"));
+        navigationPanel.add(historySpinner);
+        navigationPanel.add(jumpButton);
 
-        // Button panels
-        JPanel fenButtonPanel = new JPanel();
-        fenButtonPanel.add(importButton);
-        fenButtonPanel.add(exportButton);
-
-        JPanel historyPanel = new JPanel();
-        historyPanel.add(prevButton);
-        historyPanel.add(nextButton);
-
+        // Main button panel
         JPanel buttonPanel = new JPanel(new BorderLayout());
-        buttonPanel.add(historyControlPanel, BorderLayout.NORTH);
-        buttonPanel.add(fenButtonPanel, BorderLayout.CENTER);
-        buttonPanel.add(historyPanel, BorderLayout.SOUTH);
-        buttonPanel.add(turnLabel, BorderLayout.AFTER_LAST_LINE);
+        buttonPanel.add(navigationPanel, BorderLayout.CENTER);
+        buttonPanel.add(turnLabel, BorderLayout.SOUTH);
 
         controlPanel.add(fenTextField, BorderLayout.CENTER);
-        controlPanel.add(buttonPanel, BorderLayout.SOUTH);
+        controlPanel.add(buttonPanel, BorderLayout.NORTH);
+        controlPanel.add(historyButtonPanel, BorderLayout.SOUTH);
 
         add(chessBoard, BorderLayout.CENTER);
         add(controlPanel, BorderLayout.SOUTH);
@@ -163,7 +156,7 @@ public class ChessApplication extends JFrame {
         pack();
         setLocationRelativeTo(null);
 
-        // Initialize board with starting position
+        // Initialize board
         importFEN();
         updateTurnIndicator();
         updateNavigationButtons();
@@ -180,25 +173,31 @@ public class ChessApplication extends JFrame {
     }
 
     private void exportHistoryToFile() {
-        try {
-            String desktopPath = System.getProperty("user.home") + "/Desktop/chess_history.txt";
-            Path file = Paths.get(desktopPath);
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setSelectedFile(new File("chess_history.txt"));
+        int option = fileChooser.showSaveDialog(this);
 
-            Files.write(file, moveHistory, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            JOptionPane.showMessageDialog(this, "History exported to Desktop/chess_history.txt");
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error exporting history: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            try {
+                Path file = fileChooser.getSelectedFile().toPath();
+                Files.write(file, moveHistory);
+                JOptionPane.showMessageDialog(this, "History exported to:\n" + file.toString());
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error exporting history:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
     private void importHistoryFromFile() {
-        try {
-            String desktopPath = System.getProperty("user.home") + "/Desktop/chess_history.txt";
-            Path file = Paths.get(desktopPath);
+        JFileChooser fileChooser = new JFileChooser();
+        int option = fileChooser.showOpenDialog(this);
 
-            if (Files.exists(file)) {
+        if (option == JFileChooser.APPROVE_OPTION) {
+            try {
+                Path file = fileChooser.getSelectedFile().toPath();
                 List<String> importedHistory = Files.readAllLines(file);
+
                 if (!importedHistory.isEmpty()) {
                     moveHistory = new ArrayList<>(importedHistory);
                     currentMoveIndex = moveHistory.size() - 1;
@@ -207,15 +206,15 @@ public class ChessApplication extends JFrame {
                     fenTextField.setText(moveHistory.get(currentMoveIndex));
                     importFEN();
                     updateNavigationButtons();
-                    JOptionPane.showMessageDialog(this, "History imported successfully");
+                    JOptionPane.showMessageDialog(this, "History imported from:\n" + file.toString());
+                } else {
+                    JOptionPane.showMessageDialog(this, "The file is empty",
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "No history file found on Desktop",
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error importing history:\n" + ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error importing history: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -297,7 +296,7 @@ public class ChessApplication extends JFrame {
             fen.append(" - ");
         }
 
-        // Halfmove clock and fullmove number (simplified)
+        // Halfmove clock and fullmove number
         fen.append("0 1");
 
         return fen.toString();
@@ -305,7 +304,6 @@ public class ChessApplication extends JFrame {
 
     private void handleSquareClick(int row, int col) {
         if (selectedPiece == null) {
-            // Select a piece
             Piece clickedPiece = squares.get(row).get(col).getPiece();
             if (clickedPiece != null && ((isWhiteTurn && clickedPiece.getType().isWhite()) ||
                     (!isWhiteTurn && clickedPiece.getType().isBlack()))) {
@@ -315,11 +313,9 @@ public class ChessApplication extends JFrame {
                 squares.get(row).get(col).setBackground(Color.YELLOW);
             }
         } else {
-            // Attempt to move the selected piece
             if (isValidMove(selectedRow, selectedCol, row, col)) {
                 Piece movedPiece = squares.get(selectedRow).get(selectedCol).getPiece();
 
-                // Handle castling
                 if (movedPiece.getType() == PieceType.KING_WHITE || movedPiece.getType() == PieceType.KING_BLACK) {
                     if (movedPiece.getType().isWhite()) {
                         whiteKingMoved = true;
@@ -327,7 +323,7 @@ public class ChessApplication extends JFrame {
                         blackKingMoved = true;
                     }
 
-                    if (Math.abs(selectedCol - col) == 2) { // Castling move
+                    if (Math.abs(selectedCol - col) == 2) {
                         boolean kingside = col > selectedCol;
                         int rookCol = kingside ? 7 : 0;
                         int newRookCol = kingside ? col - 1 : col + 1;
@@ -343,29 +339,24 @@ public class ChessApplication extends JFrame {
                     }
                 }
 
-                // Handle pawn moves
                 if (movedPiece.getType() == PieceType.PAWN_WHITE || movedPiece.getType() == PieceType.PAWN_BLACK) {
                     handlePawnMove(selectedRow, selectedCol, row, col);
                 }
 
-                // Move the piece
                 squares.get(selectedRow).get(selectedCol).setPiece(null);
                 squares.get(row).get(col).setPiece(selectedPiece);
 
-                // Handle pawn promotion
                 if ((selectedPiece.getType() == PieceType.PAWN_WHITE && row == 0) ||
                         (selectedPiece.getType() == PieceType.PAWN_BLACK && row == 7)) {
                     squares.get(row).get(col).setPiece(new Piece(
                             selectedPiece.getType().isWhite() ? PieceType.QUEEN_WHITE : PieceType.QUEEN_BLACK));
                 }
 
-                // Switch turns and update history
                 isWhiteTurn = !isWhiteTurn;
                 updateTurnIndicator();
                 addToMoveHistory();
             }
 
-            // Reset selection
             squares.get(selectedRow).get(selectedCol).setBackground(
                     (selectedRow + selectedCol) % 2 == 0 ? Color.WHITE : new Color(180, 180, 180));
             selectedPiece = null;
@@ -426,14 +417,12 @@ public class ChessApplication extends JFrame {
         if ((isWhite && whiteRooksMoved.get(kingside ? 1 : 0))) return false;
         if (!isWhite && blackRooksMoved.get(kingside ? 1 : 0)) return false;
 
-        // Check path is clear
         int start = Math.min(fromCol, rookCol) + 1;
         int end = Math.max(fromCol, rookCol);
         for (int col = start; col < end; col++) {
             if (squares.get(fromRow).get(col).getPiece() != null) return false;
         }
 
-        // Check path is safe
         int step = kingside ? 1 : -1;
         for (int col = fromCol; col != toCol; col += step) {
             if (isSquareUnderAttack(fromRow, col, !isWhite)) return false;
@@ -557,7 +546,6 @@ public class ChessApplication extends JFrame {
         boolean isWhite = pawn.getType().isWhite();
         int direction = isWhite ? -1 : 1;
 
-        // Forward move
         if (fromCol == toCol && squares.get(toRow).get(toCol).getPiece() == null) {
             if (toRow == fromRow + direction) return true;
             if ((isWhite && fromRow == 6) || (!isWhite && fromRow == 1)) {
@@ -566,10 +554,8 @@ public class ChessApplication extends JFrame {
             }
         }
 
-        // Capture
         if (Math.abs(fromCol - toCol) == 1 && toRow == fromRow + direction) {
             if (squares.get(toRow).get(toCol).getPiece() != null) return true;
-            // En passant
             if (enPassantTarget != null && toRow == enPassantTarget.get(0) && toCol == enPassantTarget.get(1)) {
                 squares.get(fromRow).get(toCol).setPiece(null);
                 return true;
@@ -593,14 +579,12 @@ public class ChessApplication extends JFrame {
         String[] parts = fen.split(" ");
         if (parts.length < 1) return;
 
-        // Clear the board
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 squares.get(row).get(col).setPiece(null);
             }
         }
 
-        // Parse piece placement
         String[] ranks = parts[0].split("/");
         for (int row = 0; row < 8; row++) {
             String rank = ranks[row];
@@ -619,23 +603,20 @@ public class ChessApplication extends JFrame {
             }
         }
 
-        // Parse active color
         if (parts.length >= 2) {
             isWhiteTurn = parts[1].equalsIgnoreCase("w");
         }
 
-        // Parse castling availability
         if (parts.length >= 3) {
             String castling = parts[2];
             whiteKingMoved = !(castling.contains("K") || castling.contains("Q"));
             blackKingMoved = !(castling.contains("k") || castling.contains("q"));
-            whiteRooksMoved.set(1, !castling.contains("K")); // kingside
-            whiteRooksMoved.set(0, !castling.contains("Q")); // queenside
-            blackRooksMoved.set(1, !castling.contains("k")); // kingside
-            blackRooksMoved.set(0, !castling.contains("q")); // queenside
+            whiteRooksMoved.set(1, !castling.contains("K"));
+            whiteRooksMoved.set(0, !castling.contains("Q"));
+            blackRooksMoved.set(1, !castling.contains("k"));
+            blackRooksMoved.set(0, !castling.contains("q"));
         }
 
-        // Parse en passant
         if (parts.length >= 4 && !parts[3].equals("-")) {
             String ep = parts[3];
             int col = ep.charAt(0) - 'a';
@@ -648,10 +629,6 @@ public class ChessApplication extends JFrame {
         }
 
         updateTurnIndicator();
-    }
-
-    private void exportFEN() {
-        fenTextField.setText(generateFEN());
     }
 
     public static void main(String[] args) {
