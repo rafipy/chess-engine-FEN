@@ -112,19 +112,12 @@ public class ChessApplication extends JFrame {
         prevButton.addActionListener(e -> navigateMoveHistory(-1));
         nextButton.addActionListener(e -> navigateMoveHistory(1));
 
-        // Turn indicator
-        turnLabel = new JLabel("White's turn", SwingConstants.CENTER);
-        turnLabel.setFont(new Font("Serif", Font.BOLD, 16));
-        turnLabel.setOpaque(true);
-        turnLabel.setBackground(Color.WHITE);
-        turnLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
         // History navigation controls
         historySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 0, 1));
         jumpButton = new JButton("Jump to Move");
         jumpButton.addActionListener(e -> jumpToMove());
 
-        // History buttons panel
+        // History buttons panel (now above turn indicator)
         JPanel historyButtonPanel = new JPanel();
         exportHistoryButton = new JButton("Export History");
         importHistoryButton = new JButton("Import History");
@@ -132,6 +125,13 @@ public class ChessApplication extends JFrame {
         importHistoryButton.addActionListener(e -> importHistoryFromFile());
         historyButtonPanel.add(exportHistoryButton);
         historyButtonPanel.add(importHistoryButton);
+
+        // Turn indicator (now below history buttons)
+        turnLabel = new JLabel("White's turn", SwingConstants.CENTER);
+        turnLabel.setFont(new Font("Serif", Font.BOLD, 16));
+        turnLabel.setOpaque(true);
+        turnLabel.setBackground(Color.WHITE);
+        turnLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         // Navigation panel
         JPanel navigationPanel = new JPanel();
@@ -141,14 +141,14 @@ public class ChessApplication extends JFrame {
         navigationPanel.add(historySpinner);
         navigationPanel.add(jumpButton);
 
-        // Main button panel
+        // Main button panel with new layout
         JPanel buttonPanel = new JPanel(new BorderLayout());
-        buttonPanel.add(navigationPanel, BorderLayout.CENTER);
-        buttonPanel.add(turnLabel, BorderLayout.SOUTH);
+        buttonPanel.add(navigationPanel, BorderLayout.NORTH);
+        buttonPanel.add(historyButtonPanel, BorderLayout.CENTER);  // History buttons in center
+        buttonPanel.add(turnLabel, BorderLayout.SOUTH);  // Turn indicator at bottom
 
         controlPanel.add(fenTextField, BorderLayout.CENTER);
-        controlPanel.add(buttonPanel, BorderLayout.NORTH);
-        controlPanel.add(historyButtonPanel, BorderLayout.SOUTH);
+        controlPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(chessBoard, BorderLayout.CENTER);
         add(controlPanel, BorderLayout.SOUTH);
