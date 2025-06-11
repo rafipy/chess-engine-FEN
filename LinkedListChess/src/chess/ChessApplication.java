@@ -200,8 +200,8 @@ public class ChessApplication extends JFrame {
 
         if (option == JFileChooser.APPROVE_OPTION) {
             try {
-                Path file = fileChooser.getSelectedFile().toPath();
                 startTime = System.nanoTime();
+                Path file = fileChooser.getSelectedFile().toPath();
                 Files.write(file, fenHistory);
                 endTime = System.nanoTime();
                 JOptionPane.showMessageDialog(this, "History exported to:\n" + file.toString());
@@ -223,8 +223,8 @@ public class ChessApplication extends JFrame {
 
         if (option == JFileChooser.APPROVE_OPTION) {
             try {
-                Path file = fileChooser.getSelectedFile().toPath();
                 startTime = System.nanoTime();
+                Path file = fileChooser.getSelectedFile().toPath();
                 List<String> importedHistory = Files.readAllLines(file);
                 if (!importedHistory.isEmpty()) {
 
@@ -275,6 +275,9 @@ public class ChessApplication extends JFrame {
     }
 
     private void addToMoveHistory() {
+        long startTime, endTime;
+
+        startTime = System.nanoTime();
         if (currentHistoryIndex < fenHistory.size() - 1) {
             fenHistory.subList(currentHistoryIndex + 1, fenHistory.size()).clear();
         }
@@ -285,6 +288,10 @@ public class ChessApplication extends JFrame {
         historySpinner.setModel(new SpinnerNumberModel(
                 currentHistoryIndex, 0, Math.max(0, fenHistory.size() - 1), 1));
         updateNavigationButtons();
+        endTime = System.nanoTime();
+
+        getTime(startTime, endTime); //get time used
+        getSpace(); //get space used
     }
 
 
