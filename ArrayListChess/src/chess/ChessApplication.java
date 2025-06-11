@@ -1,13 +1,24 @@
+package chess;
+
+import chess.model.ChessSquare;
+import chess.model.Piece;
+import chess.model.PieceType;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.*;
-import java.nio.file.*;
-import javax.swing.JOptionPane;
+
+import static chess.utils.Benchmark.getSpace;
+import static chess.utils.Benchmark.getTime;
 
 public class ChessApplication extends JFrame {
     private JPanel chessBoard;
@@ -163,6 +174,9 @@ public class ChessApplication extends JFrame {
     }
 
     private void jumpToMove() {
+        long startTime = 0;
+        long endTime = 0;
+        startTime = System.nanoTime();
         int index = (Integer)historySpinner.getValue();
         if (index >= 0 && index < moveHistory.size()) {
             currentMoveIndex = index;
@@ -170,9 +184,14 @@ public class ChessApplication extends JFrame {
             importFEN();
             updateNavigationButtons();
         }
+        endTime = System.nanoTime();
+        getTime(startTime, endTime);
+        getSpace();
     }
 
     private void exportHistoryToFile() {
+        long startTime = 0;
+        long endTime = 0;
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setSelectedFile(new File("chess_history.txt"));
         int option = fileChooser.showSaveDialog(this);
@@ -180,22 +199,29 @@ public class ChessApplication extends JFrame {
         if (option == JFileChooser.APPROVE_OPTION) {
             try {
                 Path file = fileChooser.getSelectedFile().toPath();
+                startTime = System.nanoTime();
                 Files.write(file, moveHistory);
+                endTime = System.nanoTime();
                 JOptionPane.showMessageDialog(this, "History exported to:\n" + file.toString());
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Error exporting history:\n" + ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+        getTime(startTime, endTime); //get time used
+        getSpace(); //get space used
     }
 
     private void importHistoryFromFile() {
         JFileChooser fileChooser = new JFileChooser();
         int option = fileChooser.showOpenDialog(this);
+        long startTime = 0;
+        long endTime = 0;
 
         if (option == JFileChooser.APPROVE_OPTION) {
             try {
                 Path file = fileChooser.getSelectedFile().toPath();
+                startTime = System.nanoTime();
                 List<String> importedHistory = Files.readAllLines(file);
 
                 if (!importedHistory.isEmpty()) {
@@ -206,6 +232,7 @@ public class ChessApplication extends JFrame {
                     fenTextField.setText(moveHistory.get(currentMoveIndex));
                     importFEN();
                     updateNavigationButtons();
+                    endTime = System.nanoTime();
                     JOptionPane.showMessageDialog(this, "History imported from:\n" + file.toString());
                 } else {
                     JOptionPane.showMessageDialog(this, "The file is empty",
@@ -216,6 +243,8 @@ public class ChessApplication extends JFrame {
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+        getTime(startTime, endTime); //get time used
+        getSpace(); //get space used
     }
 
     private void navigateMoveHistory(int direction) {
@@ -229,16 +258,23 @@ public class ChessApplication extends JFrame {
     }
 
     private void addToMoveHistory() {
+        long startTime = 0;
+        long endTime = 0;
+
+        startTime = System.nanoTime();
         if (currentMoveIndex < moveHistory.size() - 1) {
             moveHistory.subList(currentMoveIndex + 1, moveHistory.size()).clear();
         }
-
         String currentFEN = generateFEN();
         moveHistory.add(currentFEN);
         currentMoveIndex = moveHistory.size() - 1;
         historySpinner.setModel(new SpinnerNumberModel(
                 currentMoveIndex, 0, Math.max(0, moveHistory.size() - 1), 1));
         updateNavigationButtons();
+
+        endTime = System.nanoTime();
+        getTime(startTime, endTime); //get time used
+        getSpace(); //get space used
     }
 
     private void updateNavigationButtons() {
@@ -636,84 +672,5 @@ public class ChessApplication extends JFrame {
             ChessApplication chessApp = new ChessApplication();
             chessApp.setVisible(true);
         });
-    }
-}
-
-class ChessSquare extends JPanel {
-    private Piece piece;
-    private final int row, col;
-
-    public ChessSquare(int row, int col) {
-        this.row = row;
-        this.col = col;
-        setPreferredSize(new Dimension(50, 50));
-        setLayout(new GridBagLayout());
-    }
-
-    public void setPiece(Piece piece) {
-        this.piece = piece;
-        removeAll();
-        if (piece != null) {
-            JLabel pieceLabel = new JLabel(piece.getSymbol());
-            pieceLabel.setFont(new Font("Serif", Font.PLAIN, 36));
-            add(pieceLabel);
-        }
-        revalidate();
-        repaint();
-    }
-
-    public Piece getPiece() {
-        return piece;
-    }
-}
-
-class Piece {
-    private final PieceType type;
-
-    public Piece(PieceType type) {
-        this.type = type;
-    }
-
-    public PieceType getType() {
-        return type;
-    }
-
-    public String getSymbol() {
-        return type.getSymbol();
-    }
-}
-
-enum PieceType {
-    PAWN_WHITE("♙", true),
-    KNIGHT_WHITE("♘", true),
-    BISHOP_WHITE("♗", true),
-    ROOK_WHITE("♖", true),
-    QUEEN_WHITE("♕", true),
-    KING_WHITE("♔", true),
-    PAWN_BLACK("♟", false),
-    KNIGHT_BLACK("♞", false),
-    BISHOP_BLACK("♝", false),
-    ROOK_BLACK("♜", false),
-    QUEEN_BLACK("♛", false),
-    KING_BLACK("♚", false);
-
-    private final String symbol;
-    private final boolean white;
-
-    PieceType(String symbol, boolean white) {
-        this.symbol = symbol;
-        this.white = white;
-    }
-
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public boolean isWhite() {
-        return white;
-    }
-
-    public boolean isBlack() {
-        return !white;
     }
 }
