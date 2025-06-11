@@ -207,6 +207,7 @@ public class ChessApplication extends JFrame {
                     }
                 }
                 Files.write(file, historyList);
+                endTime = System.nanoTime();
                 JOptionPane.showMessageDialog(this, "History exported to:\n" + file.toString());
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Error exporting history:\n" + ex.getMessage(),
@@ -225,6 +226,7 @@ public class ChessApplication extends JFrame {
 
         if (option == JFileChooser.APPROVE_OPTION) {
             try {
+                startTime = System.nanoTime();
                 Path file = fileChooser.getSelectedFile().toPath();
                 List<String> importedHistory = Files.readAllLines(file);
 
@@ -240,6 +242,7 @@ public class ChessApplication extends JFrame {
                     fenTextField.setText(fenHistory.get(currentHistoryIndex));
                     initializeFEN();
                     updateNavigationButtons();
+                    endTime = System.nanoTime();
                     JOptionPane.showMessageDialog(this, "History imported from:\n" + file.toString());
                 } else {
                     JOptionPane.showMessageDialog(this, "The file is empty",
