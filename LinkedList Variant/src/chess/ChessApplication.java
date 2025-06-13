@@ -44,6 +44,7 @@ public class ChessApplication extends JFrame {
     private JButton importHistoryButton;
 
     private static final Map<Character, PieceType> fenToPiece = new HashMap<>();
+
     static {
         fenToPiece.put('P', PieceType.PAWN_WHITE);
         fenToPiece.put('N', PieceType.KNIGHT_WHITE);
@@ -60,6 +61,7 @@ public class ChessApplication extends JFrame {
     }
 
     private static final Map<PieceType, Character> pieceToFen = new HashMap<>();
+
     static {
         pieceToFen.put(PieceType.PAWN_WHITE, 'P');
         pieceToFen.put(PieceType.KNIGHT_WHITE, 'N');
@@ -178,8 +180,8 @@ public class ChessApplication extends JFrame {
             fenTextField.setText(fenHistory.get(currentHistoryIndex));
             initializeFEN();
             updateNavigationButtons();
-            endTime = System.nanoTime();
 
+            endTime = System.nanoTime();
             getTime(startTime, endTime); //Get time used
             getSpace(); // Get space used
         }
@@ -227,7 +229,6 @@ public class ChessApplication extends JFrame {
                 Path file = fileChooser.getSelectedFile().toPath();
                 List<String> importedHistory = Files.readAllLines(file);
                 if (!importedHistory.isEmpty()) {
-
                     fenHistory = new LinkedList<>(importedHistory);
                     currentHistoryIndex = fenHistory.size() - 1;
                     historySpinner.setModel(new SpinnerNumberModel(
@@ -367,11 +368,7 @@ public class ChessApplication extends JFrame {
                     }
                 }
 
-                // Handle en passant capture
-                if (selectedPiece.getType() == PieceType.PAWN_WHITE ||
-                        selectedPiece.getType() == PieceType.PAWN_BLACK) {
-                    handlePawnMove(selectedRow, selectedCol, row, col);
-                }
+
 
                 // Move the piece
                 squares[selectedRow][selectedCol].setPiece(null);
@@ -600,48 +597,7 @@ public class ChessApplication extends JFrame {
         }
     }
 
-    private boolean isValidCastling(int fromRow, int fromCol, int toRow, int toCol) {
-        boolean isWhite = squares[fromRow][fromCol].getPiece().getType().isWhite();
 
-        // Check if king has moved
-        if ((isWhite && whiteKingMoved) || (!isWhite && blackKingMoved)) {
-            return false;
-        }
-
-        // Check if in check
-        if (isKingInCheck(isWhite)) {
-            return false;
-        }
-
-        // Determine castling side
-        boolean kingside = toCol > fromCol;
-        int rookCol = kingside ? 7 : 0;
-
-        // Check if rook has moved
-        if ((isWhite && whiteRooksMoved[kingside ? 1 : 0]) ||
-                (!isWhite && blackRooksMoved[kingside ? 1 : 0])) {
-            return false;
-        }
-
-        // Check if squares between are empty
-        int start = Math.min(fromCol, rookCol) + 1;
-        int end = Math.max(fromCol, rookCol);
-        for (int col = start; col < end; col++) {
-            if (squares[fromRow][col].getPiece() != null) {
-                return false;
-            }
-        }
-
-        // Check if king would pass through attacked square
-        int step = kingside ? 1 : -1;
-        for (int col = fromCol; col != toCol; col += step) {
-            if (isSquareUnderAttack(fromRow, col, !isWhite)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
 
 
@@ -793,19 +749,6 @@ public class ChessApplication extends JFrame {
         return false;
     }
 
-    private void handlePawnMove(int fromRow, int fromCol, int toRow, int toCol) {
-        // Clear en passant target after move
-        enPassantTarget = null;
-
-        // If pawn moved two squares, set new en passant target
-        Piece pawn = squares[fromRow][fromCol].getPiece();
-        boolean isWhite = pawn.getType().isWhite();
-        int direction = isWhite ? -1 : 1;
-
-        if (Math.abs(toRow - fromRow) == 2 && fromCol == toCol) {
-            enPassantTarget = new int[]{fromRow + direction, fromCol};
-        }
-    }
 
     private void initializeFEN() {
         String fen = fenTextField.getText().trim();
