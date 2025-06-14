@@ -11,7 +11,7 @@ Such a notation can be chained together to do a multitude of things to help you 
 - 2 Player, turn-based, good ol' fashioned Chess
 
 ## Installation
-**Keep in mind that you will need the LATEST JAVA VERSION to run the .exe or .java**
+> **Keep in mind that you will need the LATEST JAVA VERSION to run the .exe or .java**
 
 ### Running through Windows
 1. You can install the game either by directly downloading the ZIP of the **source code** and navigating to one of the folders (Array List, Linked List, Hash Map, choose whichever one).
