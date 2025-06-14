@@ -1,4 +1,4 @@
-![screenshot](Extra-Documentation/Chess_Poster.png)
+![screenshot](Documentation/Chess_Poster.png)
 
 # Chess Engine with FEN Integration
 
