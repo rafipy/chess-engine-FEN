@@ -10,6 +10,9 @@ Such a notation can be chained together to do a multitude of things to help you 
 - Export and import Match History
 - 2 Player, turn-based, good ol' fashioned Chess
 
+## Installation
+### Keep in mind that you will need the LATEST JAVA VERSION to run the .exe or .java
+
 ## Running through Windows
 You can install the game either by directly downloading the ZIP of the **source code** and navigating to one of the folders (Array List, Linked List, Hash Map, choose whichever one). 
 Then clicking directly onto one of the folders allows you to find a **exe** file.
@@ -21,4 +24,4 @@ Install the **source code**.
 Navigate into one of the variants and into the **src** folder.
 Open the *ChessApplication.java* in a suitable Java IDE before running it there!
 
-### Keep in mind that you will need the LATEST JAVA VERSION to run the .exe or .java
+
